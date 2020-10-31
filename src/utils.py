@@ -1,7 +1,10 @@
 import os
 import csv
+import random
+random.seed(16)
 
 import numpy as np
+#np.random.seed(16)
 import torch
 from sklearn import metrics
 
