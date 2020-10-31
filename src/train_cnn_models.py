@@ -13,6 +13,7 @@ Arguments:
   <data_dir>            Path to a directory where the data lives e.g. 'MRNet-v1.0'
   <plane>               MRI plane of choice ('axial', 'coronal', 'sagittal')
   <epochs>              Number of epochs e.g. 50
+  <choose_16>           Whether to choose 16 frames or whole clip e.g. 1 for Yes, 0 for No
 
 Training options:
   --lr=<lr>             Learning rate for nn.optim.Adam optimizer [default: 0.00001]
@@ -37,6 +38,8 @@ from utils import create_output_dir, \
                   print_stats,       \
                   save_losses,       \
                   save_checkpoint
+
+torch.manual_seed(16)
 
 
 def calculate_weights(data_dir, dataset_type, device):
@@ -111,7 +114,7 @@ def update_lr_schedulers(lr_schedulers, batch_valid_losses):
         scheduler.step(v_loss)
 
 
-def main(data_dir, plane, epochs, lr, weight_decay, device=None):
+def main(data_dir, plane, epochs, choose_16, lr, weight_decay, device=None):
     diagnoses = ['abnormal', 'acl', 'meniscus']
 
     exp = f'{datetime.now():%Y-%m-%d_%H-%M}'
@@ -122,8 +125,8 @@ def main(data_dir, plane, epochs, lr, weight_decay, device=None):
 
     print('Creating data loaders...')
 
-    train_loader = make_data_loader(data_dir, 'train', plane, device, shuffle=True)
-    valid_loader = make_data_loader(data_dir, 'valid', plane, device)
+    train_loader = make_data_loader(data_dir, 'train', plane, choose_16, device, shuffle=True)
+    valid_loader = make_data_loader(data_dir, 'valid', plane, choose_16, device)
 
     print(f'Creating models...')
 
@@ -200,6 +203,7 @@ if __name__ == '__main__':
     main(arguments['<data_dir>'],
          arguments['<plane>'],
          int(arguments['<epochs>']),
+         int(arguments['<choose_16>'])==1,
          float(arguments['--lr']),
          float(arguments['--weight-decay']),
          arguments['--device'])

@@ -10,8 +10,14 @@ MEAN = 58.09
 STD = 49.73
 
 
-def preprocess_data(case_path, transform=None):
+def preprocess_data(case_path, choose_16 = False, transform=None):
     series =np.load(case_path).astype(np.float32)
+
+    if choose_16:
+        series_len = series.shape[0]
+        frame_idxs = random.sample(list(range(series_len)),16)
+        series = series[frame_idxs]
+
     series = torch.tensor(np.stack((series,)*3, axis=1))
 
     if transform is not None:

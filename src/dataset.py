@@ -12,7 +12,7 @@ from utils import preprocess_data
 
 
 class MRNetDataset(Dataset):
-    def __init__(self, dataset_dir, labels_path, plane, transform=None, device=None):
+    def __init__(self, dataset_dir, labels_path, plane, choose_16 = False, transform=None, device=None):
         self.case_paths = sorted(glob(f'{dataset_dir}/{plane}/**.npy'))
         self.labels_df = pd.read_csv(labels_path)
         self.transform = transform
@@ -20,13 +20,14 @@ class MRNetDataset(Dataset):
         self.device = device
         if self.device is None:
             self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.choose_16 = choose_16
 
     def __len__(self):
         return len(self.case_paths)
 
     def __getitem__(self, idx):
         case_path = self.case_paths[idx]
-        series = preprocess_data(case_path, self.transform)
+        series = preprocess_data(case_path, self.choose_16, self.transform)
 
         case_id = int(os.path.splitext(os.path.basename(case_path))[0])
         case_row = self.labels_df[self.labels_df.case == case_id]
@@ -36,7 +37,7 @@ class MRNetDataset(Dataset):
         return (series, labels)
 
 
-def make_dataset(data_dir, dataset_type, plane, device=None):
+def make_dataset(data_dir, dataset_type, plane, choose_16 = False, device=None):
     if device is None:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -58,6 +59,6 @@ def make_dataset(data_dir, dataset_type, plane, device=None):
     else:
         raise ValueError('Dataset needs to be train or valid.')
 
-    dataset = MRNetDataset(dataset_dir, labels_path, plane, transform=transform, device=device)
+    dataset = MRNetDataset(dataset_dir, labels_path, plane, choose_16 = choose_16, transform=transform, device=device)
 
     return dataset

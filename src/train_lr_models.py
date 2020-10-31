@@ -12,6 +12,7 @@ General options:
 Arguments:
   <data_dir>        Path to a directory where the data lives e.g. 'MRNet-v1.0'
   <models_dir>      Directory where CNN models are saved e.g. 'models/2019-06-24_04-18'
+  <choose_16>       Whether to choose 16 frames or all frames in a clip, e.g. 1 for Yes and 0 for No.
 """
 
 import sys
@@ -28,7 +29,7 @@ from model import MRNet
 from data_loader import make_data_loader
 
 
-def main(data_dir, models_dir):
+def main(data_dir, models_dir, choose_16):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     planes = ['axial', 'coronal', 'sagittal']
     conditions = ['abnormal', 'acl', 'meniscus']
@@ -52,9 +53,9 @@ def main(data_dir, models_dir):
 
     print(f'Creating data loaders...')
 
-    axial_loader = make_data_loader(data_dir, 'train', 'axial')
-    coronal_loader = make_data_loader(data_dir, 'train', 'coronal')
-    sagittal_loader = make_data_loader(data_dir, 'train', 'sagittal')
+    axial_loader = make_data_loader(data_dir, 'train', 'axial', choose_16)
+    coronal_loader = make_data_loader(data_dir, 'train', 'coronal', choose_16)
+    sagittal_loader = make_data_loader(data_dir, 'train', 'sagittal', choose_16)
 
     print(f'Collecting predictions on train dataset from the models...')
 
@@ -105,4 +106,5 @@ if __name__ == '__main__':
     print('Parsing arguments...')
 
     main(arguments['<data_dir>'],
-         arguments['<models_dir>'])
+         arguments['<models_dir>'],
+         int(arguments['<choose_16>'])==1)
