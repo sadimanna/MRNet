@@ -13,7 +13,7 @@ MEAN = 58.09
 STD = 49.73
 
 
-def preprocess_data(case_path, choose_16 = False, transform=None):
+def preprocess_data(case_path, transform=None, choose_16 = False):
     series =np.load(case_path).astype(np.float32)
 
     if choose_16:
