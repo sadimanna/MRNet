@@ -64,10 +64,7 @@ def make_adam_optimizer(model, lr, weight_decay):
 
 
 def make_lr_scheduler(optimizer,
-                      mode='min',
-                      factor=0.3,
-                      patience=1,
-                      verbose=False):
+                      gamma):
     return optim.lr_scheduler.ExponentialLR(optimizer, gamma)
 
 def batch_forward_backprop(models, inputs, labels, criterions, optimizers):
@@ -107,7 +104,7 @@ def batch_forward(models, inputs, labels, criterions):
 
 
 def update_lr_schedulers(lr_schedulers):
-    for scheduler, v_loss in lr_schedulers:
+    for scheduler in lr_schedulers:
         scheduler.step()
 
 
