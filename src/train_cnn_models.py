@@ -3,7 +3,7 @@
 tears for a given plane (axial, coronal or sagittal) of knee MRI images.
 
 Usage:
-  train_cnn_models.py <data_dir> <plane> <epochs> [options]
+  train_cnn_models.py <data_dir> <plane> <epochs> <choose_16> [options]
   train_cnn_models.py (-h | --help)
 
 General options:
@@ -23,6 +23,7 @@ Training options:
 """
 
 import sys
+import random
 import numpy as np
 import pandas as pd
 from docopt import docopt
@@ -137,7 +138,7 @@ def main(data_dir, plane, epochs, choose_16, lr, weight_decay, device=None):
     optimizers = [make_adam_optimizer(model, lr, weight_decay) \
                   for model in models]
 
-    lr_schedulers = [make_lr_scheduler(optimizer) for optimizer in optimizers]
+    lr_schedulers = [make_lr_scheduler(optimizer,0.95) for optimizer in optimizers]
 
     min_valid_losses = [np.inf, np.inf, np.inf]
 
