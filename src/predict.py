@@ -4,7 +4,7 @@ in src/cnn_models_paths.txt and logistic regression models specified in
 src/lr_models_paths.txt.
 
 Usage:
-  predict.py <valid_paths_csv> <output_dir>
+  predict.py <valid_paths_csv> <output_dir> <choose_16>
   predict.py (-h | --help)
 
 General options:
@@ -20,6 +20,7 @@ Arguments:
                      prediction for abnormality, ACL tear, and meniscal tear,
                      in that order
                      e.g. 'out_dir'
+  <choose_16>        Whther to select 16 frames or the whole clip e.g. 1 for Yes and 0 for No
 """
 
 import os
@@ -39,7 +40,7 @@ from model import MRNet
 from utils import preprocess_data
 
 
-def main(valid_paths_csv, output_dir):
+def main(valid_paths_csv, output_dir, choose_16):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     input_files_df = pd.read_csv(valid_paths_csv, header=None)
@@ -102,7 +103,7 @@ def main(valid_paths_csv, output_dir):
         data = []
 
         for case_path in case_paths:
-            series = preprocess_data(case_path, transform)
+            series = preprocess_data(case_path, transform, choose_16)
             data.append(series.unsqueeze(0).to(device))
 
         # Make predictions per case
@@ -133,4 +134,5 @@ if __name__ == '__main__':
     print('Parsing arguments...')
 
     main(arguments['<valid_paths_csv>'],
-         arguments['<output_dir>'])
+         arguments['<output_dir>'],
+        int(arguments['<choose_16>'])==1)
