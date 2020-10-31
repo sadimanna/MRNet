@@ -60,7 +60,7 @@ def calculate_weights(data_dir, dataset_type, device):
 
 
 def make_adam_optimizer(model, lr, weight_decay):
-    return optim.Adam(model.parameters(), lr, weight_decay=weight_decay)
+    return optim.RMSprop(model.parameters(), lr, weight_decay=weight_decay)
 
 
 def make_lr_scheduler(optimizer,
@@ -68,12 +68,7 @@ def make_lr_scheduler(optimizer,
                       factor=0.3,
                       patience=1,
                       verbose=False):
-    return optim.lr_scheduler.ReduceLROnPlateau(optimizer,
-                                                mode=mode,
-                                                factor=factor,
-                                                patience=patience,
-                                                verbose=verbose)
-
+    return optim.lr_scheduler.ExponentialLR(optimizer, gamma)
 
 def batch_forward_backprop(models, inputs, labels, criterions, optimizers):
     losses = []
@@ -84,7 +79,8 @@ def batch_forward_backprop(models, inputs, labels, criterions, optimizers):
         optimizer.zero_grad()
 
         out = model(inputs)
-        loss = criterion(out, label.unsqueeze(0))
+        label = label.view(1,-1)
+        loss = criterion(out, label)
         loss.backward()
         optimizer.step()
 
@@ -103,15 +99,16 @@ def batch_forward(models, inputs, labels, criterions):
 
         out = model(inputs)
         preds.append(out.item())
-        loss = criterion(out, label.unsqueeze(0))
+        label = label.view(1,-1)
+        loss = criterion(out, label)
         losses.append(loss.item())
 
     return np.array(preds), np.array(losses)
 
 
-def update_lr_schedulers(lr_schedulers, batch_valid_losses):
-    for scheduler, v_loss in zip(lr_schedulers, batch_valid_losses):
-        scheduler.step(v_loss)
+def update_lr_schedulers(lr_schedulers):
+    for scheduler, v_loss in lr_schedulers:
+        scheduler.step()
 
 
 def main(data_dir, plane, epochs, choose_16, lr, weight_decay, device=None):
@@ -183,7 +180,7 @@ def main(data_dir, plane, epochs, choose_16, lr, weight_decay, device=None):
                     valid_labels, valid_preds)
         save_losses(batch_train_losses, batch_valid_losses, losses_path)
 
-        update_lr_schedulers(lr_schedulers, batch_valid_losses)
+        update_lr_schedulers(lr_schedulers)
 
         for i, (batch_v_loss, min_v_loss) in \
                 enumerate(zip(batch_valid_losses, min_valid_losses)):
